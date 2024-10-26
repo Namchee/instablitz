@@ -58,12 +58,13 @@
     "release": "bumpp && nr publish"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^2.26.0",
     "@antfu/ni": "^0.22.4",
     "@biomejs/biome": "^1.9.4",
     "@namchee/biome-config": "^1.1.0",
     "@types/node": "^22.4.1",
     "@types/vscode": "^1.92.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
     "@vscode/vsce": "^3.0.0",
     "bumpp": "^9.5.1",
     "pnpm": "^9.7.1",
