@@ -1,14 +1,12 @@
-import { defineExtension } from 'reactive-vscode'
-import { window, workspace } from 'vscode'
+import * as vscode from 'vscode';
 
-const { activate, deactivate } = defineExtension(async () => {
-  window.showInformationMessage('Hello')
+export function activate(context: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand(
+    'extension.instablitz',
+    () => {
+      const ws = vscode.workspace.findFiles('**/*.*', 'node_modules');
+    },
+  );
 
-  const files = await workspace.findFiles('**/*.*', 'node_modules');
-  for (const file of files) {
-    console.log(file.path);
-    window.showInformationMessage(file.path);
-  }
-});
-
-export { activate, deactivate }
+  context.subscriptions.push(disposable);
+}

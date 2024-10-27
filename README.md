@@ -12,7 +12,9 @@
 ## Commands
 
 <!-- commands -->
-<!-- empty -->
+| Command                | Title                                 |
+| ---------------------- | ------------------------------------- |
+| `extension.instablitz` | Share current workspace on StackBlitz |
 <!-- commands -->
 
 ## License
