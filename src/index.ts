@@ -7,6 +7,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 <body>
   <form id="mainForm" method="post" action="https://stackblitz.com/run" target="_self">
     {content}
+    <input type="hidden" name="project[template]" value="node">
   </form>
 
   <script>
@@ -46,10 +47,18 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const rawMetadata = await vscode.workspace.fs.readFile(packageJson);
-      const { dependencies } = JSON.parse(rawMetadata.toString());
-      console.log(dependencies);
+      const { name, description, dependencies } = JSON.parse(
+        rawMetadata.toString(),
+      );
 
-      const name = vscode.workspace.name;
+      const projectName = name || vscode.workspace.name;
+      const contents = [
+        `<input type="hidden" name="project[name]" value="${projectName}">`,
+        `<input type="hidden" name="project[description]" value="${description}">`,
+        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies)}">`,
+      ];
+
+      console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
 
       // const gitignore = files.find((file) => file.path.endsWith('.gitignore'));
     },

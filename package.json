@@ -40,7 +40,7 @@
     "commands": [
       {
         "command": "extension.instablitz",
-        "title": "Share current workspace on StackBlitz"
+        "title": "InstaBlitz: Share current workspace on StackBlitz"
       }
     ],
     "configuration": {
