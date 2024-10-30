@@ -37,13 +37,30 @@ export async function activate(context: vscode.ExtensionContext) {
       );
 
       const projectName = name || vscode.workspace.name;
-      const contents = [
-        `<input type="hidden" name="project[name]" value="${projectName}">`,
-        `<input type="hidden" name="project[description]" value="${description}">`,
-        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies)}">`,
-      ];
+      const form = new FormData();
+      form.append('project[name]', projectName);
+      form.append('project[description]', description);
+      form.append('project[dependencies]', JSON.stringify(dependencies));
+      form.append('project[template]', 'node');
 
-      console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
+      const request = await fetch('https://stackblitz.com/run', {
+        method: 'POST',
+        body: form,
+      });
+
+      console.log(request.ok);
+      const body = await request.text();
+
+      console.log(body);
+
+      // for (const file of files) {
+      //   const content = file.query;
+      //   contents.push(
+      //     `<input type="hidden" name="project[files]" value="${file.path}">`,
+      //   );
+      // }
+
+      // console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
 
       // const gitignore = files.find((file) => file.path.endsWith('.gitignore'));
     },
