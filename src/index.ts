@@ -76,10 +76,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const fileUri = vscode.Uri.file(tempFilePath);
       await vscode.env.openExternal(fileUri);
-
-      // console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
-
-      // const gitignore = files.find((file) => file.path.endsWith('.gitignore'));
     },
   );
 
