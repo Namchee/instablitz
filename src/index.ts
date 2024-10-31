@@ -16,6 +16,13 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 </body>
 </html>`;
 
+function getPathAsSquareBrackets(filepath: string): string {
+  return filepath
+    .split('/')
+    .map((p) => `[${p}]`)
+    .join('');
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     'extension.instablitz',
@@ -37,28 +44,21 @@ export async function activate(context: vscode.ExtensionContext) {
       );
 
       const projectName = name || vscode.workspace.name;
-      const form = new FormData();
-      form.append('project[name]', projectName);
-      form.append('project[description]', description);
-      form.append('project[dependencies]', JSON.stringify(dependencies));
-      form.append('project[template]', 'node');
 
-      const request = await fetch('https://stackblitz.com/run', {
-        method: 'POST',
-        body: form,
+      const stackblitzInputs = [
+        `<input type="hidden" name="project[title]" value="${projectName}" />`,
+        `<input type="hidden" name="project[description]" value="${description}" />`,
+        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies)}" />`,
+        `<input type="hidden" name="project[template]" value="node" />`,
+      ];
+
+      const promises = files.map(async (file) => {
+        const contents = await vscode.workspace.fs.readFile(file);
+        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${contents.toString()}" />`;
       });
 
-      console.log(request.ok);
-      const body = await request.text();
-
-      console.log(body);
-
-      // for (const file of files) {
-      //   const content = file.query;
-      //   contents.push(
-      //     `<input type="hidden" name="project[files]" value="${file.path}">`,
-      //   );
-      // }
+      const projectFiles = await Promise.all(promises);
+      projectFiles.unshift(...stackblitzInputs);
 
       // console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
 
