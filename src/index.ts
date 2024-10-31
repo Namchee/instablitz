@@ -1,3 +1,6 @@
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -18,7 +21,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 
 function getPathAsSquareBrackets(filepath: string): string {
   return filepath
-    .split('/')
+    .split(path.sep)
     .map((p) => `[${p}]`)
     .join('');
 }
@@ -59,6 +62,20 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const projectFiles = await Promise.all(promises);
       projectFiles.unshift(...stackblitzInputs);
+
+      const html = PAYLOAD_TEMPLATE.replace(
+        '{content}',
+        projectFiles.join('\n'),
+      );
+
+      const tempFilePath = path.join(
+        os.tmpdir(),
+        `temp-${vscode.workspace.name}.html`,
+      );
+      fs.writeFileSync(tempFilePath, html);
+
+      const fileUri = vscode.Uri.file(tempFilePath);
+      await vscode.env.openExternal(fileUri);
 
       // console.log(PAYLOAD_TEMPLATE.replace('{content}', contents.join('\n')));
 
