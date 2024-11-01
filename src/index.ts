@@ -1,6 +1,6 @@
-import * as fs from 'node:fs';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import { rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, sep } from 'node:path';
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -21,7 +21,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 
 function getPathAsSquareBrackets(filepath: string): string {
   return filepath
-    .split(path.sep)
+    .split(sep)
     .map((p) => `[${p}]`)
     .join('');
 }
@@ -68,14 +68,15 @@ export async function activate(context: vscode.ExtensionContext) {
         projectFiles.join('\n'),
       );
 
-      const tempFilePath = path.join(
-        os.tmpdir(),
-        `temp-${vscode.workspace.name}.html`,
-      );
-      fs.writeFileSync(tempFilePath, html);
+      console.log(html);
+
+      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
+      writeFileSync(tempFilePath, html);
 
       const fileUri = vscode.Uri.file(tempFilePath);
       await vscode.env.openExternal(fileUri);
+
+      rmSync(tempFilePath);
     },
   );
 
