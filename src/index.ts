@@ -1,6 +1,4 @@
-import { rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { sep } from 'node:path';
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -68,15 +66,37 @@ export async function activate(context: vscode.ExtensionContext) {
         projectFiles.join('\n'),
       );
 
-      console.log(html);
+      // console.log(html);
 
-      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
-      writeFileSync(tempFilePath, html);
+      const workspacePath = vscode.workspace.workspaceFolders;
+      if (!workspacePath?.length) {
+        vscode.window.showErrorMessage(
+          'This extension only works on a workspace',
+        );
+        return;
+      }
 
-      const fileUri = vscode.Uri.file(tempFilePath);
-      await vscode.env.openExternal(fileUri);
+      await vscode.env.openExternal(
+        vscode.Uri.parse('https://www.example.com'),
+      );
 
-      rmSync(tempFilePath);
+      // const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+
+      // // Open the data URL in the user's default browser
+      // const result = await vscode.env.openExternal(vscode.Uri.parse(dataUrl));
+
+      // console.log(result);
+      // const tempFilePath = join(
+      //   workspacePath[0].uri.fsPath,
+      //   `temp-${vscode.workspace.name}.html`,
+      // );
+      // writeFileSync(tempFilePath, html);
+
+      // const fileUri = vscode.Uri.file(tempFilePath);
+      // console.log(fileUri.toString());
+      // await vscode.env.openExternal(fileUri);
+
+      // rmSync(tempFilePath);
     },
   );
 
