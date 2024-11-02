@@ -1,4 +1,5 @@
-import { sep } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { join, sep } from 'node:path';
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -66,8 +67,6 @@ export async function activate(context: vscode.ExtensionContext) {
         projectFiles.join('\n'),
       );
 
-      // console.log(html);
-
       const workspacePath = vscode.workspace.workspaceFolders;
       if (!workspacePath?.length) {
         vscode.window.showErrorMessage(
@@ -76,25 +75,14 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      await vscode.env.openExternal(
-        vscode.Uri.parse('https://www.example.com'),
+      const tempFilePath = join(
+        workspacePath[0].uri.fsPath,
+        `temp-${vscode.workspace.name}.html`,
       );
+      writeFileSync(tempFilePath, html);
 
-      // const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-
-      // // Open the data URL in the user's default browser
-      // const result = await vscode.env.openExternal(vscode.Uri.parse(dataUrl));
-
-      // console.log(result);
-      // const tempFilePath = join(
-      //   workspacePath[0].uri.fsPath,
-      //   `temp-${vscode.workspace.name}.html`,
-      // );
-      // writeFileSync(tempFilePath, html);
-
-      // const fileUri = vscode.Uri.file(tempFilePath);
-      // console.log(fileUri.toString());
-      // await vscode.env.openExternal(fileUri);
+      const fileUri = vscode.Uri.file(tempFilePath);
+      await vscode.env.openExternal(fileUri);
 
       // rmSync(tempFilePath);
     },
