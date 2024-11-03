@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, sep } from 'node:path';
+import { join } from 'node:path';
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -21,7 +21,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 
 function getPathAsSquareBrackets(filepath: string): string {
   return filepath
-    .split(sep)
+    .split('/')
     .map((p) => `[${p}]`)
     .join('');
 }
