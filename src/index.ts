@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, sep } from 'node:path';
 import * as vscode from 'vscode';
 
@@ -75,16 +76,11 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const tempFilePath = join(
-        workspacePath[0].uri.fsPath,
-        `temp-${vscode.workspace.name}.html`,
-      );
+      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
       writeFileSync(tempFilePath, html);
 
       const fileUri = vscode.Uri.file(tempFilePath);
       await vscode.env.openExternal(fileUri);
-
-      // rmSync(tempFilePath);
     },
   );
 
