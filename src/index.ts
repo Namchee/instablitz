@@ -1,5 +1,4 @@
 import { writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as vscode from 'vscode';
 
@@ -51,13 +50,13 @@ export async function activate(context: vscode.ExtensionContext) {
       const stackblitzInputs = [
         `<input type="hidden" name="project[title]" value="${projectName}" />`,
         `<input type="hidden" name="project[description]" value="${description}" />`,
-        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies)}" />`,
+        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies).replaceAll('"', '&quot;')}" />`,
         `<input type="hidden" name="project[template]" value="node" />`,
       ];
 
       const promises = files.map(async (file) => {
         const contents = await vscode.workspace.fs.readFile(file);
-        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${contents.toString()}" />`;
+        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${encodeURIComponent(contents.toString())}" />`;
       });
 
       const projectFiles = await Promise.all(promises);
@@ -76,11 +75,14 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
+      const tempFilePath = join(
+        workspacePath[0].uri.fsPath,
+        `temp-${vscode.workspace.name}.html`,
+      );
       writeFileSync(tempFilePath, html);
 
-      const fileUri = vscode.Uri.file(tempFilePath);
-      await vscode.env.openExternal(fileUri);
+      // const fileUri = vscode.Uri.file(tempFilePath);
+      // await vscode.env.openExternal(fileUri);
     },
   );
 
