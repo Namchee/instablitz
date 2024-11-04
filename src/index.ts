@@ -56,7 +56,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const promises = files.map(async (file) => {
         const contents = await vscode.workspace.fs.readFile(file);
-        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${encodeURIComponent(contents.toString())}" />`;
+        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${contents.toString().replaceAll('"', '&quot;')}" />`;
       });
 
       const projectFiles = await Promise.all(promises);
