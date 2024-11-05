@@ -1,5 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 import * as vscode from 'vscode';
 
 const PAYLOAD_TEMPLATE = `<html lang="en">
@@ -9,7 +10,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 <body>
   <form id="mainForm" method="post" action="https://stackblitz.com/run" target="_self">
     {content}
-    <input type="hidden" name="project[template]" value="node">
+    <input type="hidden" name="project[template]" value="node" />
   </form>
 
   <script>
@@ -80,9 +81,6 @@ export async function activate(context: vscode.ExtensionContext) {
         `temp-${vscode.workspace.name}.html`,
       );
       writeFileSync(tempFilePath, html);
-
-      // const fileUri = vscode.Uri.file(tempFilePath);
-      // await vscode.env.openExternal(fileUri);
     },
   );
 
