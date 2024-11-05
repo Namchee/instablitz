@@ -52,7 +52,6 @@ export async function activate(context: vscode.ExtensionContext) {
         `<input type="hidden" name="project[title]" value="${projectName}" />`,
         `<input type="hidden" name="project[description]" value="${description}" />`,
         `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies).replaceAll('"', '&quot;')}" />`,
-        `<input type="hidden" name="project[template]" value="node" />`,
       ];
 
       const promises = files.map(async (file) => {
