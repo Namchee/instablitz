@@ -8,13 +8,32 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 </head>
 
 <body>
-  <form id="mainForm" method="post" action="https://stackblitz.com/run" target="_self">
-    {content}
-    <input type="hidden" name="project[template]" value="node" />
-  </form>
+  <script type="module">
+    import sdk from 'https://unpkg.com/@stackblitz/sdk@1/bundles/sdk.m.js';
 
-  <script>
-    document.getElementById("mainForm").submit();
+    sdk.openProject(
+      {
+        title: 'JS Starter',
+        description: 'Blank starter project for building ES6 apps.',
+        template: 'javascript',
+        files: {
+          'index.html': \`< div id = "app" > </div>\`,
+          'index.js': \`import './style.css';
+            const appDiv = document.getElementById('app');
+            appDiv.innerHTML = '<h1>JS Starter</h1>';\`,
+              'style.css': \`body { font-family: system-ui, sans-serif; }\`,
+        },
+        settings: {
+          compile: {
+            trigger: 'auto',
+            clearConsole: false,
+          },
+        },
+      },
+      {
+        newWindow: false,
+      },
+    );
   </script>
 </body>
 </html>`;
@@ -80,6 +99,9 @@ export async function activate(context: vscode.ExtensionContext) {
         `temp-${vscode.workspace.name}.html`,
       );
       writeFileSync(tempFilePath, html);
+
+      const fileUri = vscode.Uri.file(tempFilePath);
+      await vscode.env.openExternal(fileUri);
     },
   );
 
