@@ -12,24 +12,7 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
     import sdk from 'https://unpkg.com/@stackblitz/sdk@1/bundles/sdk.m.js';
 
     sdk.openProject(
-      {
-        title: 'JS Starter',
-        description: 'Blank starter project for building ES6 apps.',
-        template: 'javascript',
-        files: {
-          'index.html': \`< div id = "app" > </div>\`,
-          'index.js': \`import './style.css';
-            const appDiv = document.getElementById('app');
-            appDiv.innerHTML = '<h1>JS Starter</h1>';\`,
-              'style.css': \`body { font-family: system-ui, sans-serif; }\`,
-        },
-        settings: {
-          compile: {
-            trigger: 'auto',
-            clearConsole: false,
-          },
-        },
-      },
+      {project},
       {
         newWindow: false,
       },
@@ -38,12 +21,17 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
 </body>
 </html>`;
 
-function getPathAsSquareBrackets(filepath: string): string {
-  return filepath
-    .split('/')
-    .map((p) => `[${p}]`)
-    .join('');
-}
+type StackblitzProject = {
+  name: string;
+  description?: string;
+  files: Record<string, string>;
+  template: 'node';
+  settings?: {
+    compile?: {
+      trigger?: 'auto' | 'save' | 'keystroke';
+    };
+  };
+};
 
 export async function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
@@ -61,29 +49,41 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const rawMetadata = await vscode.workspace.fs.readFile(packageJson);
-      const { name, description, dependencies } = JSON.parse(
-        rawMetadata.toString(),
-      );
+      const { name, description } = JSON.parse(rawMetadata.toString());
 
       const projectName = name || vscode.workspace.name;
 
-      const stackblitzInputs = [
-        `<input type="hidden" name="project[title]" value="${projectName}" />`,
-        `<input type="hidden" name="project[description]" value="${description}" />`,
-        `<input type="hidden" name="project[dependencies]" value="${JSON.stringify(dependencies).replaceAll('"', '&quot;')}" />`,
-      ];
+      const stackblitzProject: StackblitzProject = {
+        name: projectName,
+        template: 'node',
+        files: {},
+        settings: {
+          compile: {
+            trigger: 'auto',
+          },
+        },
+      };
+
+      if (description) {
+        stackblitzProject.description = description;
+      }
 
       const promises = files.map(async (file) => {
         const contents = await vscode.workspace.fs.readFile(file);
-        return `<input type="hidden" name="project[files]${getPathAsSquareBrackets(vscode.workspace.asRelativePath(file.fsPath))}" value="${contents.toString().replaceAll('"', '&quot;')}" />`;
+        return {
+          name: vscode.workspace.asRelativePath(file.fsPath),
+          content: contents.toString(),
+        };
       });
 
       const projectFiles = await Promise.all(promises);
-      projectFiles.unshift(...stackblitzInputs);
+      for (const file of projectFiles) {
+        stackblitzProject.files[file.name] = file.content;
+      }
 
       const html = PAYLOAD_TEMPLATE.replace(
-        '{content}',
-        projectFiles.join('\n'),
+        '{project}',
+        JSON.stringify(stackblitzProject, null, 2),
       );
 
       const workspacePath = vscode.workspace.workspaceFolders;
