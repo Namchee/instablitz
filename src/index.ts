@@ -101,7 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
       writeFileSync(tempFilePath, html);
 
       const fileUri = vscode.Uri.file(tempFilePath);
-      await vscode.env.openExternal(fileUri);
+      // await vscode.env.openExternal(fileUri);
     },
   );
 
