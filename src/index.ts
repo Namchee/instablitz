@@ -33,6 +33,11 @@ type StackblitzProject = {
   };
 };
 
+function escapeHtml(html: string) {
+  // escape `</script>` tag to avoid rendering bugs
+  return html.replaceAll('</script>', '<\\/script>');
+}
+
 export async function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     'extension.instablitz',
@@ -69,10 +74,15 @@ export async function activate(context: vscode.ExtensionContext) {
       }
 
       const promises = files.map(async (file) => {
-        const contents = await vscode.workspace.fs.readFile(file);
+        const buffer = await vscode.workspace.fs.readFile(file);
+        let content = buffer.toString();
+        if (file.fsPath.endsWith('.html')) {
+          content = escapeHtml(content);
+        }
+
         return {
           name: vscode.workspace.asRelativePath(file.fsPath),
-          content: contents.toString(),
+          content,
         };
       });
 
