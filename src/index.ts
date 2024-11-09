@@ -17,11 +17,10 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
         newWindow: false,
       },
     );
-`;
-
-const PAYLOAD_FOOTER = `  </script>
+  </script>
 </body>
-</html>`;
+</html>
+`;
 
 type StackblitzProject = {
   name: string;
@@ -84,11 +83,13 @@ export async function activate(context: vscode.ExtensionContext) {
         stackblitzProject.files[file.name] = file.content;
       }
 
-      let html = PAYLOAD_TEMPLATE.replace(
+      const html = PAYLOAD_TEMPLATE.replace(
         '{project}',
-        JSON.stringify(stackblitzProject, null, 2),
-      ).replace(/<\/script>/g, '<\\/script>');
-      html += PAYLOAD_FOOTER;
+        JSON.stringify(stackblitzProject, null, 2).replace(
+          /<\/script>/g,
+          '<\\/script>',
+        ),
+      );
 
       const workspacePath = vscode.workspace.workspaceFolders;
       if (!workspacePath?.length) {
