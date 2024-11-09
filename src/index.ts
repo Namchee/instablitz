@@ -17,7 +17,9 @@ const PAYLOAD_TEMPLATE = `<html lang="en">
         newWindow: false,
       },
     );
-  </script>
+`;
+
+const PAYLOAD_FOOTER = `  </script>
 </body>
 </html>`;
 
@@ -32,11 +34,6 @@ type StackblitzProject = {
     };
   };
 };
-
-function escapeHtml(html: string) {
-  // escape `</script>` tag to avoid rendering bugs
-  return html.replaceAll('</script>', '<\\/script>');
-}
 
 export async function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
@@ -75,14 +72,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
       const promises = files.map(async (file) => {
         const buffer = await vscode.workspace.fs.readFile(file);
-        let content = buffer.toString();
-        if (file.fsPath.endsWith('.html')) {
-          content = escapeHtml(content);
-        }
 
         return {
           name: vscode.workspace.asRelativePath(file.fsPath),
-          content,
+          content: buffer.toString(),
         };
       });
 
@@ -91,10 +84,11 @@ export async function activate(context: vscode.ExtensionContext) {
         stackblitzProject.files[file.name] = file.content;
       }
 
-      const html = PAYLOAD_TEMPLATE.replace(
+      let html = PAYLOAD_TEMPLATE.replace(
         '{project}',
         JSON.stringify(stackblitzProject, null, 2),
-      );
+      ).replace(/<\/script>/g, '<\\/script>');
+      html += PAYLOAD_FOOTER;
 
       const workspacePath = vscode.workspace.workspaceFolders;
       if (!workspacePath?.length) {
