@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import * as vscode from 'vscode';
@@ -38,6 +39,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
     'extension.instablitz',
     async () => {
+      const workspacePath = vscode.workspace.workspaceFolders;
+      if (!workspacePath?.length) {
+        vscode.window.showErrorMessage(
+          'This extension only works on a workspace',
+        );
+        return;
+      }
+
       const files = await vscode.workspace.findFiles('**/*.*', 'node_modules');
       const packageJson = files.find((file) =>
         file.path.endsWith('package.json'),
@@ -91,22 +100,12 @@ export async function activate(context: vscode.ExtensionContext) {
         ),
       );
 
-      const workspacePath = vscode.workspace.workspaceFolders;
-      if (!workspacePath?.length) {
-        vscode.window.showErrorMessage(
-          'This extension only works on a workspace',
-        );
-        return;
-      }
+      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
 
-      const tempFilePath = join(
-        workspacePath[0].uri.fsPath,
-        `temp-${vscode.workspace.name}.html`,
-      );
       writeFileSync(tempFilePath, html);
 
       const fileUri = vscode.Uri.file(tempFilePath);
-      // await vscode.env.openExternal(fileUri);
+      await vscode.env.openExternal(fileUri);
     },
   );
 
