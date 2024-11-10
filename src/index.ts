@@ -58,54 +58,65 @@ export async function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const rawMetadata = await vscode.workspace.fs.readFile(packageJson);
-      const { name, description } = JSON.parse(rawMetadata.toString());
-
-      const projectName = name || vscode.workspace.name;
-
-      const stackblitzProject: StackblitzProject = {
-        name: projectName,
-        template: 'node',
-        files: {},
-        settings: {
-          compile: {
-            trigger: 'auto',
-          },
+      vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: 'Exporting current workspace to StackBlitz...',
         },
-      };
+        async () => {
+          const rawMetadata = await vscode.workspace.fs.readFile(packageJson);
+          const { name, description } = JSON.parse(rawMetadata.toString());
 
-      if (description) {
-        stackblitzProject.description = description;
-      }
+          const projectName = name || vscode.workspace.name;
 
-      const promises = files.map(async (file) => {
-        const buffer = await vscode.workspace.fs.readFile(file);
+          const stackblitzProject: StackblitzProject = {
+            name: projectName,
+            template: 'node',
+            files: {},
+            settings: {
+              compile: {
+                trigger: 'auto',
+              },
+            },
+          };
 
-        return {
-          name: vscode.workspace.asRelativePath(file.fsPath),
-          content: buffer.toString(),
-        };
-      });
+          if (description) {
+            stackblitzProject.description = description;
+          }
 
-      const projectFiles = await Promise.all(promises);
-      for (const file of projectFiles) {
-        stackblitzProject.files[file.name] = file.content;
-      }
+          const promises = files.map(async (file) => {
+            const buffer = await vscode.workspace.fs.readFile(file);
 
-      const html = PAYLOAD_TEMPLATE.replace(
-        '{project}',
-        JSON.stringify(stackblitzProject, null, 2).replace(
-          /<\/script>/g,
-          '<\\/script>',
-        ),
+            return {
+              name: vscode.workspace.asRelativePath(file.fsPath),
+              content: buffer.toString(),
+            };
+          });
+
+          const projectFiles = await Promise.all(promises);
+          for (const file of projectFiles) {
+            stackblitzProject.files[file.name] = file.content;
+          }
+
+          const html = PAYLOAD_TEMPLATE.replace(
+            '{project}',
+            JSON.stringify(stackblitzProject, null, 2).replace(
+              /<\/script>/g,
+              '<\\/script>',
+            ),
+          );
+
+          const tempFilePath = join(
+            tmpdir(),
+            `temp-${vscode.workspace.name}.html`,
+          );
+
+          writeFileSync(tempFilePath, html);
+
+          const fileUri = vscode.Uri.file(tempFilePath);
+          await vscode.env.openExternal(fileUri);
+        },
       );
-
-      const tempFilePath = join(tmpdir(), `temp-${vscode.workspace.name}.html`);
-
-      writeFileSync(tempFilePath, html);
-
-      const fileUri = vscode.Uri.file(tempFilePath);
-      await vscode.env.openExternal(fileUri);
     },
   );
 
