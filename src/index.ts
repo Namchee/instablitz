@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { isBinaryFileSync } from 'isbinaryfile';
+
+import { isUtf8 } from 'node:buffer';
 
 import * as vscode from 'vscode';
 
@@ -86,17 +86,24 @@ export async function activate(context: vscode.ExtensionContext) {
           }
 
           const promises = files.map(async (file) => {
-            const buffer = await vscode.workspace.fs.readFile(file);
-            const content = buffer.toString();
+            try {
+              const buffer = await vscode.workspace.fs.readFile(file);
 
-            return {
-              name: vscode.workspace.asRelativePath(file.fsPath),
-              content: isBinaryFileSync(content) ? '' : content,
-            };
+              if (!isUtf8(buffer)) {
+                return null;
+              }
+
+              return {
+                name: vscode.workspace.asRelativePath(file.fsPath),
+                content: buffer.toString(),
+              };
+            } catch (_) {
+              return null;
+            }
           });
 
           const projectFiles = (await Promise.all(promises)).filter(
-            (file) => file.content !== '',
+            (file) => file !== null,
           );
           for (const file of projectFiles) {
             stackblitzProject.files[file.name] = file.content;
@@ -111,7 +118,7 @@ export async function activate(context: vscode.ExtensionContext) {
           );
 
           const tempFilePath = join(
-            tmpdir(),
+            workspacePath[0].uri.fsPath,
             `temp-${vscode.workspace.name}.html`,
           );
 
