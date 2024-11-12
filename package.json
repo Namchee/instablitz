@@ -54,7 +54,7 @@
     "dev": "nr build --watch",
     "prepare": "nr update",
     "update": "vscode-ext-gen --output src/generated/meta.ts",
-    "lint": "eslint .",
+    "lint": "biome lint --error-on-warnings ./src",
     "vscode:prepublish": "nr build",
     "publish": "vsce publish --no-dependencies",
     "pack": "vsce package --no-dependencies",
