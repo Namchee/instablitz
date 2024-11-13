@@ -2,10 +2,13 @@
   "publisher": "6C",
   "name": "instablitz",
   "displayName": "InstaBlitz",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "packageManager": "pnpm@9.7.1",
-  "description": "",
+  "description": "Export your Visual Studio Code workspace to StackBlitz instantly",
+  "keywords": [
+    "stackblitz"
+  ],
   "author": {
     "name": "Cristopher Namchee",
     "email": "cristophernamchee12@gmail.com",
@@ -33,21 +36,14 @@
   "engines": {
     "vscode": "^1.92.0"
   },
-  "activationEvents": [
-    "onStartupFinished"
-  ],
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
         "command": "extension.instablitz",
         "title": "InstaBlitz: Share current workspace on StackBlitz"
       }
-    ],
-    "configuration": {
-      "type": "object",
-      "title": "instablitz",
-      "properties": {}
-    }
+    ]
   },
   "scripts": {
     "build": "tsup src/index.ts --external vscode",
